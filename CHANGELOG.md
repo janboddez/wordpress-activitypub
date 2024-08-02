@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2024-07-29
+
+### Added
+
+* "Reply Context" support, you can now reply to posts on the Fediverse through a WordPress post
+* Bookmarklet to automatically pre-fill the "Reply Context" block
+* "Header Image" support and ability to edit other profile information for Authors and the Blog-User
+* ActivityPub link HTML/HTTP-Header support
+* Tag support for Actors (only auto-generated for now)
+
+### Improved
+
+* Add setting to enable/disable the `fediverse:creator` OGP tag.
+
+### Removed
+
+* Deprecated `class-post.php` model
+
+## [2.6.1] - 2024-07-18
+
+### Fixed
+
+* Extra Fields will generate wrong entries
+
+## [2.6.0] - 2024-07-17
+
+### Added
+
+* Support for FEP-fb2a
+* CRUD support for Extra Fields
+
+### Improved
+
+* Remote-Follow UI and UX
+* Open Graph `fediverse:creator` implementation
+
+### Fixed
+
+* Compatibility issues with fed.brid.gy
+* Remote-Reply endpoint
+* WebFinger Error Codes (thanks to the FediTest project)
+* Fatal Error when `wp_schedule_single_event` third argument is being passed as a string
+
 ## [2.5.0] - 2024-07-01
 
 ### Added
@@ -799,6 +842,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * initial
 
+[3.0.0]: https://github.com/Automattic/wordpress-activitypub/compare/2.6.1...3.0.0
+[2.6.1]: https://github.com/Automattic/wordpress-activitypub/compare/2.6.0...2.6.1
+[2.6.0]: https://github.com/Automattic/wordpress-activitypub/compare/2.5.0...2.6.0
 [2.5.0]: https://github.com/Automattic/wordpress-activitypub/compare/2.4.0...2.5.0
 [2.4.0]: https://github.com/Automattic/wordpress-activitypub/compare/2.3.1...2.4.0
 [2.3.1]: https://github.com/Automattic/wordpress-activitypub/compare/2.3.0...2.3.1

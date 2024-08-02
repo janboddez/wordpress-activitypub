@@ -1,6 +1,7 @@
 <?php
 namespace Activitypub;
 
+use WP_Query;
 use WP_Error;
 use Activitypub\Http;
 use Activitypub\Comment;
@@ -59,7 +60,11 @@ function get_remote_metadata_by_actor( $actor, $cached = true ) {
 		} elseif ( array_key_exists( 'url', $actor ) ) {
 			$actor = $actor['url'];
 		} else {
-			return new WP_Error( 'activitypub_no_valid_actor_identifier', \__( 'The "actor" identifier is not valid', 'activitypub' ), array( 'status' => 404, 'actor' => $actor ) );
+			return new WP_Error(
+				'activitypub_no_valid_actor_identifier',
+				\__( 'The "actor" identifier is not valid', 'activitypub' ),
+				array( 'status' => 404, 'actor' => $actor )
+			);
 		}
 	}
 
@@ -68,7 +73,11 @@ function get_remote_metadata_by_actor( $actor, $cached = true ) {
 	}
 
 	if ( ! $actor ) {
-		return new WP_Error( 'activitypub_no_valid_actor_identifier', \__( 'The "actor" identifier is not valid', 'activitypub' ), array( 'status' => 404, 'actor' => $actor ) );
+		return new WP_Error(
+			'activitypub_no_valid_actor_identifier',
+			\__( 'The "actor" identifier is not valid', 'activitypub' ),
+			array( 'status' => 404, 'actor' => $actor )
+		);
 	}
 
 	if ( is_wp_error( $actor ) ) {
@@ -87,7 +96,11 @@ function get_remote_metadata_by_actor( $actor, $cached = true ) {
 	}
 
 	if ( ! \wp_http_validate_url( $actor ) ) {
-		$metadata = new WP_Error( 'activitypub_no_valid_actor_url', \__( 'The "actor" is no valid URL', 'activitypub' ), array( 'status' => 400, 'actor' => $actor ) );
+		$metadata = new WP_Error(
+			'activitypub_no_valid_actor_url',
+			\__( 'The "actor" is no valid URL', 'activitypub' ),
+			array( 'status' => 400, 'actor' => $actor )
+		);
 		return $metadata;
 	}
 
@@ -101,7 +114,11 @@ function get_remote_metadata_by_actor( $actor, $cached = true ) {
 	$metadata = \json_decode( $metadata, true );
 
 	if ( ! $metadata ) {
-		$metadata = new WP_Error( 'activitypub_invalid_json', \__( 'No valid JSON data', 'activitypub' ), array( 'status' => 400, 'actor' => $actor ) );
+		$metadata = new WP_Error(
+			'activitypub_invalid_json',
+			\__( 'No valid JSON data', 'activitypub' ),
+			array( 'status' => 400, 'actor' => $actor )
+		);
 		return $metadata;
 	}
 
@@ -460,7 +477,11 @@ function is_user_type_disabled( $type ) {
 			$return = false;
 			break;
 		default:
-			$return = new WP_Error( 'activitypub_wrong_user_type', __( 'Wrong user type', 'activitypub' ), array( 'status' => 400 ) );
+			$return = new WP_Error(
+				'activitypub_wrong_user_type',
+				__( 'Wrong user type', 'activitypub' ),
+				array( 'status' => 400 )
+			);
 			break;
 	}
 
@@ -704,7 +725,7 @@ function url_to_commentid( $url ) {
  *
  * @return string The URI of the ActivityPub object
  */
-function object_to_uri( $object ) {
+function object_to_uri( $object ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.objectFound
 	// check if it is already simple
 	if ( ! $object || is_string( $object ) ) {
 		return $object;
@@ -988,4 +1009,71 @@ function custom_large_numbers( $formatted, $number, $decimals ) {
 
 	// Default fallback. We should not get here.
 	return $formatted;
+}
+
+/**
+ * Normalize a URL.
+ *
+ * @param string $url The URL.
+ *
+ * @return string The normalized URL.
+ */
+function normalize_url( $url ) {
+	$url = \untrailingslashit( $url );
+	$url = \str_replace( 'https://', '', $url );
+	$url = \str_replace( 'http://', '', $url );
+	$url = \str_replace( 'www.', '', $url );
+
+	return $url;
+}
+
+/**
+ * Normalize a host.
+ *
+ * @param string $host The host.
+ *
+ * @return string The normalized host.
+ */
+function normalize_host( $host ) {
+	return \str_replace( 'www.', '', $host );
+}
+
+/**
+ * Get the Extra Fields of an Actor
+ *
+ * @param int $user_id The User-ID.
+ *
+ * @return array The extra fields.
+ */
+function get_actor_extra_fields( $user_id ) {
+	$extra_fields = new WP_Query(
+		array(
+			'post_type' => 'ap_extrafield',
+			'nopaging'  => true,
+			'status'    => 'publish',
+			'author'    => $user_id,
+			'orderby'   => 'menu_order',
+			'order'     => 'ASC',
+		)
+	);
+
+	if ( $extra_fields->have_posts() ) {
+		$extra_fields = $extra_fields->posts;
+	} else {
+		$extra_fields = array();
+	}
+
+	return apply_filters( 'activitypub_get_actor_extra_fields', $extra_fields, $user_id );
+}
+
+/**
+ * Get the reply intent URI.
+ *
+ * @return string The reply intent URI.
+ */
+function get_reply_intent_uri() {
+	return sprintf(
+		'javascript:(()=>{window.open(\'%s\'+encodeURIComponent(window.location.href));})();',
+		esc_url( \admin_url( 'post-new.php?in_reply_to=' ) )
+	);
 }
